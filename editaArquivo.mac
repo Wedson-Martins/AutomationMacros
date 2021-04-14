@@ -1,0 +1,48 @@
+FUNCTION ler(OUTPUT STRING LIST info, STRING endElet) {
+	STRING arquivo = ""
+	STRING LIST conteudo = {}
+	STRING linha = ''
+	PRINT = $endElet
+	
+	
+	IF FILE_EXISTS($endElet) != true {	
+		FILE OPEN $endElet FOR WRITE AS "out"
+		FILE WRITE $linha TO "out"
+		PRINT = ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>: " + $endElet
+		FILE CLOSE "out"
+	}  
+	FILE OPEN $endElet FOR READ AS $arquivo
+	FILE READ $conteudo FROM $arquivo
+	STRING a = ""
+	FOREACH line IN $conteudo {
+		$a = add_last(info, $line)
+	}
+	FILE CLOSE $arquivo
+	
+}
+
+FUNCTION insere(STRING LIST atual, STRING raiz){
+		
+	FILE OPEN $raiz FOR WRITE AS "out"
+	FILE WRITE $atual TO "out"
+	FILE CLOSE "out"
+}
+	
+FUNCTION main() {
+
+	//IMPLEMENTAR AQUI 
+	STRING dir = project_pathname(0) + "/SetupSheets_files/palet"
+	STRING raiz = project_pathname(0) + "/SetupSheets_files/palet/palet.txt"
+	MKDIR $dir
+	STRING raiz2 = project_pathname(0) + "/SetupSheets_files/palet/a.txt"
+	$raiz = replace($raiz, "/", "\")
+	$raiz2 = replace($raiz2, "/", "\")
+	
+	STRING LIST atual = {"4","5","6"}
+	
+	CALL ler($atual, $raiz)
+	CALL insere($atual, $raiz)
+	
+	
+	PRINT = $raiz
+}

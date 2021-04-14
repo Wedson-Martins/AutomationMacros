@@ -1,0 +1,349 @@
+FUNCTION pausa (String $msg){
+	EDIT BLOCK RESET MACRO PAUSE $msg 
+}
+FUNCTION Info(OUTPUT STRING LIST info, STRING endElet) {
+	STRING arquivo = ""
+	STRING LIST conteudo = {} 
+	FILE OPEN $endElet FOR READ AS $arquivo
+	FILE READ $conteudo FROM $arquivo
+	STRING a = ""
+	FOREACH line IN $conteudo {
+		$a = add_last(info, $line)
+	}	
+	FILE CLOSE $arquivo
+}
+
+FUNCTION preencheEletrodo(OUTPUT STRING LIST Eletrodos){
+	INT total = 6 - SIZE($Eletrodos)
+	INT cont = 0
+	INT index = 0
+	CALL pausa("total: " + $total)
+	WHILE $cont < $total {
+		STRING aaa = add_last($Eletrodos, "|")
+		$cont = $cont+1
+	}
+}
+
+FUNCTION main (){
+	//informações de Diretorio
+	STRING raiz = project_pathname(0) + "/SetupSheets_files/palet/palet.csv"
+	//Lista para receber eletrodos
+	STRING LIST infoElets = {}
+	STRING LIST $temp ={}
+	
+	//Variavei para posição dos elets
+	STRING LIST Um = {}
+	STRING LIST Dois = {}
+	STRING LIST Tres = {}
+	STRING LIST Quatro = {}
+	STRING LIST Cinco = {}
+	STRING LIST Seis = {}
+	
+	//ARRAY de Eletrodos
+	STRING ARRAY PosUm[10] = {"-----","-----","-----","C:\dcam\config\Macros\Palets\EROWA\x.png","-----","-----","-----","-----","-----","-----"}
+	STRING ARRAY PosDois[10] = {"-----","-----","-----","C:\dcam\config\Macros\Palets\EROWA\x.png","-----","-----","-----","-----","-----","-----"}
+	STRING ARRAY PosTres[10] = {"-----","-----","-----","C:\dcam\config\Macros\Palets\EROWA\x.png","-----","-----","-----","-----","-----","-----"}
+	STRING ARRAY PosQuatro[10] ={"-----","-----","-----","C:\dcam\config\Macros\Palets\EROWA\x.png","-----","-----","-----","-----","-----","-----"}
+	STRING ARRAY PosCinco[10] = {"-----","-----","-----","C:\dcam\config\Macros\Palets\EROWA\x.png","-----","-----","-----","-----","-----","-----"}
+	STRING ARRAY PosSeis[10] = {"-----","-----","-----","C:\dcam\config\Macros\Palets\EROWA\x.png","-----","-----","-----","-----","-----","-----"}
+
+	//Busca Lista de eletrodos no Palet
+	CALL Info($infoElets, $raiz)
+	INT index = 0
+	STRING ARRAY Eletrodos[] = $infoElets
+	//STRING e = remove_last($infoElets)
+	FOREACH qqq IN $infoElets {
+		$qqq = replace($qqq,"|"," ")
+		STRING LIST $temp = tokens($qqq,';')
+		
+//		IF $temp5[0] != "0" {
+			STRING ARRAY temp5[] = $temp
+				SWITCH $temp5[0] {
+				CASE "6"
+					$PosSeis[] = $temp5
+					BREAK
+				CASE "5"
+					$PosCinco[] = $temp5
+					BREAK
+				CASE "4"
+					$PosQuatro[] = $temp5
+					BREAK
+				CASE "3"
+					$PosTres[] = $temp5
+					BREAK
+				CASE "2"
+					$PosDois[] = $temp5
+					BREAK
+				CASE "1"
+					$PosUm[] = $temp5
+					BREAK
+				CASE "0"
+					macro "C:\dcam\config\Macros\Palets\EROWA\FichaFundoUnico.mac"
+					MACRO ABORT
+				DEFAULT
+			}
+	//	} ELSE {
+	//		macro "C:\dcam\config\Macros\Palets\EROWA\FichaFundoUnico.mac"
+	//		MACRO ABORT
+	//	}
+	}
+
+	//STRING projectPath = "\\Servidor\cam\Ferramentas\"
+	STRING projectPath = project_pathname(0) + "\SetupSheets_files\palet\"
+	STRING HTMLFile = project_pathname(0) + "/SetupSheets_files/snapshots"
+	STRING LIST ficha = {"<HTML>"}
+
+
+	STRING a = ""
+	$a = add_last(ficha, "	<HEAD>")
+	$a = add_last(ficha, "		<TITLE> " + string('"') + $project_pathname(true) +  string('"') + "</TITLE>")	
+	$a = add_last(ficha, "<STYLE> ")
+	$a = add_last(ficha, "body {")
+	$a = add_last(ficha, "-moz-transform: rotate(90deg);")
+	$a = add_last(ficha, "-o-transform: rotate(90deg);")
+	$a = add_last(ficha, "-ms-transform: rotate(90deg);")
+	$a = add_last(ficha, "transform: rotate(90deg);")	
+	$a = add_last(ficha, "position:absolute;")	
+	//$a = add_last(ficha, "left: 100px;")	
+	$a = add_last(ficha, "top: 430px;")	
+	$a = add_last(ficha, "}")
+		
+		
+	$a = add_last(ficha, "@page {")
+	$a = add_last(ficha, "size: 21cm 29.7cm;")	
+	$a = add_last(ficha, "margin: 5mm 5mm 5mm 5mm;")	
+	$a = add_last(ficha, "}")
+	
+	$a = add_last(ficha, "</STYLE> ")
+	$a = add_last(ficha, "	</HEAD>")
+	$a = add_last(ficha, "	<body>")
+	
+	$a = add_last(ficha, "<table border=2 bordercolor=#000000>")
+	$a = add_last(ficha, "	<tr>")
+	$a = add_last(ficha, "  <td colspan=40 align=center>")
+	$a = add_last(ficha, "	<font face=Arial  size=6><i><b>Palet-1</b> </i></font></td>")
+	$a = add_last(ficha, "	</tr>")
+
+	//LINHA----------------------------------------------------------------------------------------------------------------------
+	$a = add_last(ficha, "	<tr>")
+		$a = add_last(ficha, "	<td align=center colspan=6 bgcolor=#ffffff><font face=Arial color=#000000 size=5><b>POSICAO</b></font></td>")
+		$a = add_last(ficha, "	<td align=center colspan=6 bgcolor=#ffffff><font face=Arial color=#000000 size=5><b>1</b></font></td>")
+		$a = add_last(ficha, "	<td align=center colspan=6 bgcolor=#ffffff><font face=Arial color=#000000 size=5><b>2</b></font></td>")
+		$a = add_last(ficha, "	<td align=center colspan=6 bgcolor=#ffffff><font face=Arial color=#000000 size=5><b>3</b></font></td>")
+		$a = add_last(ficha, "	<td align=center colspan=6 bgcolor=#ffffff><font face=Arial color=#000000 size=5><b>4</b></font></td>")
+		$a = add_last(ficha, "	<td align=center colspan=6 bgcolor=#ffffff><font face=Arial color=#000000 size=5><b>5</b></font></td>")
+		$a = add_last(ficha, "	<td align=center colspan=6 bgcolor=#ffffff><font face=Arial color=#000000 size=5	><b>6</b></font></td>")
+	$a = add_last(ficha, "	</tr>")
+	//LINHA----------------------------------------------------------------------------------------------------------------------
+	
+	//LINHA----------------------------------------------------------------------------------------------------------------------
+	$a = add_last(ficha, "	<tr>")
+		$a = add_last(ficha, "	<td align=center colspan=6 bgcolor=#ffffff><font face=Arial color=#000000 size=6><b>OS</b></font></td>")
+		$a = add_last(ficha, "	<td align=center colspan=6><font size=6>" + $PosUm[1] + "</font></td>")
+		$a = add_last(ficha, "	<td align=center colspan=6><font size=6>" + $PosDois[1] + "</font></td>")
+		$a = add_last(ficha, "	<td align=center colspan=6><font size=6>" + $PosTres[1] + "</font></td>")
+		$a = add_last(ficha, "	<td align=center colspan=6><font size=6>" + $PosQuatro[1] + "</font></td>")
+		$a = add_last(ficha, "	<td align=center colspan=6><font size=6>" + $PosCinco[1] + "</font></td>")
+		$a = add_last(ficha, "	<td align=center colspan=6><font size=6>" + $PosSeis[1] + "</font></td>")
+	$a = add_last(ficha, "	</tr>")
+	//LINHA----------------------------------------------------------------------------------------------------------------------	
+	
+	//LINHA----------------------------------------------------------------------------------------------------------------------
+	$a = add_last(ficha, "	<tr>")
+		$a = add_last(ficha, "	<td align=center colspan=6 bgcolor=#ffffff><font face=Arial color=#000000 size=5 width=10%><b>Nome</b></font></td>")
+		$a = add_last(ficha, "	<td align=center colspan=6><font size=6>" + $PosUm[2] + "</font></td>")
+		$a = add_last(ficha, "	<td align=center colspan=6><font size=6>" + $PosDois[2] + "</font></td>")
+		$a = add_last(ficha, "	<td align=center colspan=6><font size=6>" + $PosTres[2] + "</font></td>")
+		$a = add_last(ficha, "	<td align=center colspan=6><font size=6>" + $PosQuatro[2] + "</font></td>")
+		$a = add_last(ficha, "	<td align=center colspan=6><font size=6>" + $PosCinco[2] + "</font></td>")
+		$a = add_last(ficha, "	<td align=center colspan=6><font size=6>" + $PosSeis[2] + "</font></td>")
+	$a = add_last(ficha, "	</tr>")
+	//LINHA----------------------------------------------------------------------------------------------------------------------
+
+	//LINHA----------------------------------------------------------------------------------------------------------------------
+	$a = add_last(ficha, "	<tr>")
+		$a = add_last(ficha, "	<td align=center colspan=6 bgcolor=#ffffff height=300><font face=Arial color=#000000 size=5><b>Planta</b></font></td>")
+		$a = add_last(ficha, "	<td  align=center colspan=6 cellpadding=1><img width=210 height=130 src=" + $PosUm[3] + "></td>")
+		$a = add_last(ficha, "	<td  align=center colspan=6 cellpadding=1><img width=210 height=130 src=" + $PosDois[3] + "></td>")
+		$a = add_last(ficha, "	<td  align=center colspan=6 cellpadding=1><img width=210 height=130 src=" + $PosTres[3] + "></td>")
+		$a = add_last(ficha, "	<td  align=center colspan=6><img width=210 height=130 src=" + $PosQuatro[3] + "></td>")
+		$a = add_last(ficha, "	<td  align=center colspan=6><img width=210 height=130 src=" + $PosCinco[3] + "></td>")
+		$a = add_last(ficha, "	<td  align=center colspan=6><img width=210 height=130 src=" + $PosSeis[3] + "></td>")
+	$a = add_last(ficha, "	</tr>")
+	//LINHA----------------------------------------------------------------------------------------------------------------------
+
+	//LINHA----------------------------------------------------------------------------------------------------------------------
+	$a = add_last(ficha, "	<tr>")
+		$a = add_last(ficha, "	<td align=center colspan=6 bgcolor=#ffffff><font face=Arial color=#000000 size=6><b>Material</b></font></td>")
+		
+		IF $PosUm[4] == "Cobre " {
+			$a = add_last(ficha, "	<td align=center colspan=6><font color=#ffa500 size=6>" + $PosUm[4] + "</font></td>")	
+		} ELSE {
+			$a = add_last(ficha, "	<td align=center colspan=6><font color=#000000 size=6>" + $PosUm[4] + "</font></td>")		
+		}	
+			
+		IF $PosDois[4] == "Cobre " {
+			$a = add_last(ficha, "	<td align=center colspan=6><font color=#ffa500 size=6>" + $PosDois[4] + "</font></td>")		
+		} ELSE {
+			$a = add_last(ficha, "	<td align=center colspan=6><font color=#000000 size=6>" + $PosDois[4] + "</font></td>")			
+		}	
+		PRINT = $PosTres[4]
+		PRINT = "Cobre"
+		IF $PosTres[4] == "Cobre " {
+			$a = add_last(ficha, "	<td align=center colspan=6><font color=#ffa500 size=6>" + $PosTres[4] + "</font></td>")		
+		} ELSE {
+			$a = add_last(ficha, "	<td align=center colspan=6><font color=#000000 size=6>" + $PosTres[4] + "</font></td>")				
+		}	
+				
+		IF $PosQuatro[4] == "Cobre " {
+			$a = add_last(ficha, "	<td align=center colspan=6><font color=#ffa500 size=6>" + $PosQuatro[4] + "</font></td>")		
+		} ELSE {
+			$a = add_last(ficha, "	<td align=center colspan=6><font color=#000000 size=6>" + $PosQuatro[4] + "</font></td>")			
+		}	
+				
+		IF $PosCinco[4] == "Cobre " {
+			$a = add_last(ficha, "	<td align=center colspan=6><font color=#ffa500 size=6>" + $PosCinco[4] + "</font></td>")		
+		} ELSE {
+			$a = add_last(ficha, "	<td align=center colspan=6><font color=#000000 size=6>" + $PosCinco[4] + "</font></td>")			
+		}	
+				
+		IF $PosSeis[4] == "Cobre " {
+			$a = add_last(ficha, "	<td align=center colspan=6><font color=#ffa500 size=6>" + $PosSeis[4] + "</font></td>")		
+		} ELSE {
+			$a = add_last(ficha, "	<td align=center colspan=6><font color=#000000 size=6>" + $PosSeis[4] + "</font></td>")			
+		}	
+		
+		
+	
+	
+	
+	
+	
+	$a = add_last(ficha, "	</tr>")
+	//LINHA----------------------------------------------------------------------------------------------------------------------
+	//LINHA----------------------------------------------------------------------------------------------------------------------
+	$a = add_last(ficha, "	<tr>")
+		$a = add_last(ficha, "	<td align=center colspan=6 bgcolor=#ffffff><font face=Arial color=#000000 size=6><b>Dimensao</b></font></td>")
+		$a = add_last(ficha, "	<td align=center colspan=6><font size=6>" + $PosUm[5] + "</font></td>")
+		$a = add_last(ficha, "	<td align=center colspan=6><font size=6>" + $PosDois[5] + "</font></td>")
+		$a = add_last(ficha, "	<td align=center colspan=6><font size=6>" + $PosTres[5] + "</font></td>")
+		$a = add_last(ficha, "	<td align=center colspan=6><font size=6>" + $PosQuatro[5] + "</font></td>")
+		$a = add_last(ficha, "	<td align=center colspan=6><font size=6>" + $PosCinco[5] + "</font></td>")
+		$a = add_last(ficha, "	<td align=center colspan=6><font size=6>" + $PosSeis[5] + "</font></td>")
+	$a = add_last(ficha, "	</tr>")
+	//LINHA----------------------------------------------------------------------------------------------------------------------
+	
+	//LINHA----------------------------------------------------------------------------------------------------------------------
+	$a = add_last(ficha, "	<tr>")
+			$a = add_last(ficha, "	<td align=center colspan=6 bgcolor=#ffffff><font face=Arial color=#000000 size=6><b>Tipo</b></font></td>")
+		IF $PosUm[6] == "DESBASTE" {
+			$a = add_last(ficha, "	<td align=center colspan=6><font color=#0000ff size=6>" + $PosUm[6] + "</font></td>")
+		} ELSEIF $PosUm[6] == "ACABAMENTO" {
+			$a = add_last(ficha, "	<td align=center colspan=6><font color=#006400 size=6>" + $PosUm[6] + "</font></td>")
+		} ELSE {
+			$a = add_last(ficha, "	<td align=center colspan=6><font color=#000000 size=6>" + $PosUm[6] + "</font></td>")
+		}	
+		IF $PosDois[6] == "DESBASTE" {
+			$a = add_last(ficha, "	<td align=center colspan=6><font color=#0000ff size=6>" + $PosDois[6] + "</font></td>")
+		} ELSEIF $PosDois[6] == "ACABAMENTO" {
+			$a = add_last(ficha, "	<td align=center colspan=6><font color=#006400 size=6>" + $PosDois[6] + "</font></td>")
+		} ELSE {
+			$a = add_last(ficha, "	<td align=center colspan=6><font color=#000000 size=6>" + $PosDois[6] + "</font></td>")
+		}		
+		IF $PosTres[6] == "DESBASTE" {
+			$a = add_last(ficha, "	<td align=center colspan=6><font color=#0000ff size=6>" + $PosTres[6] + "</font></td>")	
+		} ELSEIF $PosTres[6] == "ACABAMENTO" {
+			$a = add_last(ficha, "	<td align=center colspan=6><font color=#006400 size=6>" + $PosTres[6] + "</font></td>")	
+		} ELSE {
+			$a = add_last(ficha, "	<td align=center colspan=6><font color=#000000 size=6>" + $PosTres[6] + "</font></td>")	
+		}					
+		IF $PosQuatro[6] == "DESBASTE" {
+			$a = add_last(ficha, "	<td align=center colspan=6><font color=#0000ff size=6>" + $PosQuatro[6] + "</font></td>")
+		} ELSEIF $PosQuatro[6] == "ACABAMENTO" {
+			$a = add_last(ficha, "	<td align=center colspan=6><font color=#006400 size=6>" + $PosQuatro[6] + "</font></td>")	
+		} ELSE {
+			$a = add_last(ficha, "	<td align=center colspan=6><font color=#000000 size=6>" + $PosQuatro[6] + "</font></td>")	
+		}				
+		IF $PosCinco[6] == "DESBASTE" {
+			$a = add_last(ficha, "	<td align=center colspan=6><font color=#0000ff size=6>" + $PosCinco[6] + "</font></td>")
+		} ELSEIF $PosCinco[6] == "ACABAMENTO" {
+			$a = add_last(ficha, "	<td align=center colspan=6><font color=#006400 size=6>" + $PosCinco[6] + "</font></td>")	
+		} ELSE {
+			$a = add_last(ficha, "	<td align=center colspan=6><font color=#000000 size=6>" + $PosCinco[6] + "</font></td>")	
+		}			
+		IF $PosSeis[6] == "DESBASTE" {
+		$a = add_last(ficha, "	<td align=center colspan=6><font color=#0000ff size=6>" + $PosSeis[6] + "</font></td>")
+		} ELSEIF $PosSeis[6] == "ACABAMENTO" {
+			$a = add_last(ficha, "	<td align=center colspan=6><font color=#006400 size=6>" + $PosSeis[6] + "</font></td>")	
+		} ELSE {
+			$a = add_last(ficha, "	<td align=center colspan=6><font color=#000000 size=6>" + $PosSeis[6] + "</font></td>")	
+		}
+	$a = add_last(ficha, "	</tr>")
+	//LINHA----------------------------------------------------------------------------------------------------------------------
+	
+	//LINHA----------------------------------------------------------------------------------------------------------------------
+	$a = add_last(ficha, "	<tr>")
+		$a = add_last(ficha, "	<td align=center colspan=6 bgcolor=#ffffff><font face=Arial color=#000000 size=6><b>GAP</b></font></td>")
+		$a = add_last(ficha, "	<td align=center colspan=6><font size=6>" + $PosUm[7] + "</font></td>")
+		$a = add_last(ficha, "	<td align=center colspan=6><font size=6>" + $PosDois[7] + "</font></td>")
+		$a = add_last(ficha, "	<td align=center colspan=6><font size=6>" + $PosTres[7] + "</font></td>")
+		$a = add_last(ficha, "	<td align=center colspan=6><font size=6>" + $PosQuatro[7] + "</font></td>")
+		$a = add_last(ficha, "	<td align=center colspan=6><font size=6>" + $PosCinco[7] + "</font></td>")
+		$a = add_last(ficha, "	<td align=center colspan=6><font size=6>" + $PosSeis[7] + "</font></td>")
+	$a = add_last(ficha, "	</tr>")
+	//LINHA----------------------------------------------------------------------------------------------------------------------
+	
+	//LINHA----------------------------------------------------------------------------------------------------------------------
+	$a = add_last(ficha, "	<tr>")
+		$a = add_last(ficha, "	<td align=center colspan=6 bgcolor=#ffffff><font face=Arial color=#000000 size=5><b>Retrabalho</b></font></td>")
+		$a = add_last(ficha, "	<td align=center colspan=3><font color=#ff0000 size=4>" + $PosUm[8] + "</font></td>")
+		$a = add_last(ficha, "	<td align=center colspan=3><font size=4>Concluido: </font><input type=checkbox></td>")
+		$a = add_last(ficha, "	<td align=center colspan=3><font color=#ff0000 size=4>" + $PosDois[8] + "</font></td>")
+		$a = add_last(ficha, "	<td align=center colspan=3><font size=4>Concluido: </font><input type=checkbox></td>")
+		$a = add_last(ficha, "	<td align=center colspan=3><font color=#ff0000 size=4>" + $PosTres[8] + "</font></td>")
+		$a = add_last(ficha, "	<td align=center colspan=3><font size=4>Concluido: </font><input type=checkbox></td>")
+		$a = add_last(ficha, "	<td align=center colspan=3><font color=#ff0000 size=4>" + $PosQuatro[8] + "</font></td>")
+		$a = add_last(ficha, "	<td align=center colspan=3><font size=4>Concluido: </font><input type=checkbox></td>")
+		$a = add_last(ficha, "	<td align=center colspan=3><font color=#ff0000 size=4>" + $PosCinco[8] + "</font></td>")	
+		$a = add_last(ficha, "	<td align=center colspan=3><font size=4>Concluido: </font><input type=checkbox></td>")
+		$a = add_last(ficha, "	<td align=center colspan=3><font color=#ff0000 size=4>" + $PosSeis[8] + "</font></td>")	
+		$a = add_last(ficha, "	<td align=center colspan=3><font size=4>Concluido: </font><input type=checkbox></td>")
+	$a = add_last(ficha, "	</tr>")
+	//LINHA----------------------------------------------------------------------------------------------------------------------
+	
+	//LINHA----------------------------------------------------------------------------------------------------------------------
+	$a = add_last(ficha, "	<tr>")
+		$a = add_last(ficha, "	<td align=center colspan=6 bgcolor=#ffffff><font face=Arial color=#000000 size=5><b>Obs:</b></font></td>")
+		$a = add_last(ficha, "	<td align=center colspan=6><font color=#ff0000 size=4>" + $PosUm[9] + "</font></td>")
+		$a = add_last(ficha, "	<td align=center colspan=6><font color=#ff0000 size=4>" + $PosDois[9] + "</font></td>")
+		$a = add_last(ficha, "	<td align=center colspan=6><font color=#ff0000 size=4>" + $PosTres[9] + "</font></td>")
+		$a = add_last(ficha, "	<td align=center colspan=6><font color=#ff0000 size=4>" + $PosQuatro[9] + "</font></td>")
+		$a = add_last(ficha, "	<td align=center colspan=6><font color=#ff0000 size=4>" + $PosCinco[9] + "</font></td>")
+		$a = add_last(ficha, "	<td align=center colspan=6><font color=#ff0000 size=4>" + $PosSeis[9] + "</font></td>")
+	$a = add_last(ficha, "	</tr>")
+	//LINHA----------------------------------------------------------------------------------------------------------------------
+	
+	$a = add_last(ficha, "	</TABLE>")
+	$a = add_last(ficha, "	</body>")
+	$a = add_last(ficha, "	</HTML>")
+	
+	$projectPath = $projectPath +  project.name
+	$projectPath = $projectPath +  ".html"
+	FILE OPEN $projectPath FOR WRITE AS out
+	FOREACH element IN ficha {
+		FILE WRITE $element TO out
+	}
+	FILE CLOSE out
+	//		STRING localFicha = "C:\Program Files\Autodesk\PowerMill 21.0.30\file\browser\Nova pasta\INDEX.html"
+	STRING endFichaFundo = project_pathname(0) + "/SetupSheets_files/palet/"
+	$endFichaFundo = $endFichaFundo + project.name + ".HTML"
+	//CALL pausa($endFichaFundo)
+	//CALL pausa($projectPath)
+	
+	$endFichaFundo = replace($endFichaFundo,"'/'/","\")
+	String STIHTML = ' PMILLHELP URL ' + '"' + $projectPath + '"'
+	//CALL pausa(" ")
+	//DoCommand $STIHTML
+
+	OLE FILEACTION 'OPEN' $projectPath
+}

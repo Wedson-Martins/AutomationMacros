@@ -1,0 +1,682 @@
+FUNCTION pausa (String $msg){
+	EDIT BLOCK RESET MACRO PAUSE $msg 
+}
+
+FUNCTION Info(OUTPUT STRING LIST info, STRING endElet) {
+	STRING arquivo = ""
+	STRING LIST conteudo = {}
+	PRINT = $endElet
+	FILE OPEN $endElet FOR READ AS $arquivo
+	//FILE OPEN "electrode_summary.csv" FOR READ AS $arquivo
+	
+	FILE READ $conteudo FROM $arquivo
+	
+	STRING a = ""
+	FOREACH line IN $conteudo {
+		$a = add_last(info, $line)
+	}	
+	FILE CLOSE $arquivo
+}
+
+FUNCTION bucaUltimo(OUTPUT STRING nome, STRING tipoDeLista) {
+	INT cont = 0
+	
+	FOREACH padrao IN folder($tipoDeLista) { 
+		
+		$cont = cont + 1
+	}
+	INT cont2 = 1
+	FOREACH padrao IN folder($tipoDeLista) { 
+		IF $cont2 == $cont {
+			$nome = padrao.name
+		}	
+		$cont2 = $cont2 + 1
+	}
+}
+
+FUNCTION buscaElet(STRING ARRAY Info[], STRING nomeElet, OUTPUT STRING ARRAY InfoElet[], OUTPUT STRING os){
+	
+	
+	
+	INT Index = 1
+	STRING LIST temp = {}
+	STRING LIST temp2 = {}
+	
+	//$temp2 = tokens($Info[0],'|')add_last
+	//$temp2 = tokens($Info[0],'|')
+	//STRING ARRAY arrayCabe[] = $temp2
+	STRING ARRAY arrayCabe[] = $info
+	$os = $arrayCabe[1]
+	PRINT = "-----------------------------------------------------------------: " + $os
+
+	//Cabeçalho	
+
+	$temp2 = tokens($Info[0],';')
+	STRING ARRAY eletrodoCabTemp[] = $temp2
+	PRINT = "OS: " + $eletrodoCabTemp[0]
+	//PRINT = "OS: " + $eletrodoCabTemp[1]
+	$InfoElet[1] = $eletrodoCabTemp[1]
+	
+	
+	
+	
+	
+	
+	
+	WHILE Index < size(Info) {
+		
+		$temp = tokens($nomeElet,'.')
+		$nomeElet = $temp[0]
+		$temp = tokens($Info[Index],';')
+			
+		
+		STRING ARRAY eletrodoTemp[] = $temp
+		PRINT = "Nome: " + $eletrodoTemp[0]
+		$eletrodoTemp[0] = replace($eletrodoTemp[0],"|","")
+		PRINT = "Nome: " + $eletrodoTemp[0] + "nome do que eu quero: " + $nomeElet
+		
+		IF $eletrodoTemp[0] == $nomeElet {
+		
+			PRINT = "Nome: " + $eletrodoTemp[0]
+			$InfoElet[2] = $eletrodoTemp[0]
+	
+			STRING ARRAY Opts[] = { "Desbaste" , "Semi-Acabamento" , "Acabamento" }
+			INT C = INPUT CHOICE $Opts "Qual o tipo de Eletrodo? "
+			PRINT = "---------------------------Tipo escolhido: " + $c
+			IF $c == 0 {
+				$InfoElet[6] = "DESBASTE"
+				$InfoElet[7] = $eletrodoTemp[1]
+			} ELSEIF $c == 1 {
+				$InfoElet[6] =  "SEMI-ACABAMENTO"
+				$InfoElet[7] = $eletrodoTemp[2]
+			} ELSEIF $c == 2 {
+				
+				PRINT = "---------------------------Tipo escolhido TESTE: " + $c + "   " + $eletrodoTemp[3]
+				
+				$InfoElet[6] = "ACABAMENTO"
+				$InfoElet[7] = $eletrodoTemp[3]
+			} 
+			PRINT = "DESBASTE: " + $eletrodoTemp[1]
+			PRINT = "SEMI-ACABAMENTO: " + $eletrodoTemp[2]
+			PRINT = "ACABAMENTO: " + $eletrodoTemp[3]
+		
+		
+			PRINT = "Material: " + $eletrodoTemp[4]
+			$InfoElet[4] = $eletrodoTemp[4]
+		
+		
+			PRINT = "DImensão: " + $eletrodoTemp[5]
+			$InfoElet[5] = $eletrodoTemp[5]
+		
+		
+			PRINT = "Retrabalho: " + $eletrodoTemp[6]
+			$InfoElet[8] = $eletrodoTemp[6]
+		
+		
+			PRINT = "Observações: " + $eletrodoTemp[7]
+			$InfoElet[9] = $eletrodoTemp[7]
+					
+			INT Index2 = 0
+			WHILE Index2 < 10 {
+				PRINT = "___________________________Pos: " + $Index2 + "conteudo: " + $InfoElet[Index2]
+				$Index2 = Index2 + 1
+			}
+		}
+		PRINT $Info[Index]
+		$Index = Index + 1
+	}
+
+}
+	
+FUNCTION buscaEletOriginal(STRING ARRAY Info[], STRING nomeElet, OUTPUT STRING LIST InfoElet, OUTPUT STRING os){
+	INT Index = 1
+	STRING LIST temp = {}
+	STRING LIST temp2 = {}
+	
+	$temp2 = tokens($Info[0],'|')
+	STRING ARRAY arrayCabe[] = $temp2
+	$os = $arrayCabe[1]
+	
+	
+	WHILE Index < size(Info) {
+		$temp = tokens($Info[Index],'|')
+		FOREACH nome IN $temp {
+				PRINT = "¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨: " + $nome
+			CALL limpaString($nome)
+			STRING LIST listNome = tokens($nomeElet , ".")
+			STRING ARRAY arrayNome[] = listNome
+			$nomeElet = arrayNome[0]
+			PRINT = "IF " + $nomeElet + "==" + $nome 
+			IF $nomeElet == $nome {
+				$InfoElet = $temp
+			}
+			BREAK
+		}
+		
+		PRINT $Info[Index]
+		$Index = Index + 1
+	}
+
+}
+	
+FUNCTION limpaString(OUTPUT STRING string){
+	$string = replace($string,"_","")
+	$string = ltrim($string)
+}
+
+
+FUNCTION importarModelo(OUTPUT STRING caminho){
+	FORM BLOCK
+	UNDRAW BLOCK
+	EDIT BLOCKTYPE CYLINDER
+	EDIT BLOCK COORDINATE WORLD
+	EDIT BLOCK TOLERANCE "0,001"
+	//EDIT BLOCK RESET
+	BLOCK ACCEPT
+
+	$caminho = FILESELECT "Selecione um Modelo" 
+	IMPORT MODEL $caminho
+}
+
+
+FUNCTION separaNomeDoArquivo(OUTPUT STRING nome, OUTPUT STRING caminho){
+	
+	STRING LIST Tokens = tokens($caminho, "\")
+	$caminho = ""	
+	INT cont = 0
+	FOREACH Tok IN Tokens { 
+		if ($cont == 5) {
+			STRING LIST list = tokens($Tok , ".") 
+			INT cont2 = 0
+			FOREACH semPonto IN list { 
+				if ($cont2 == 0) {
+					$nome = $semPonto
+					PRINT = "@@@@@@@@@@@@@@@@@@@@" + $nome
+				}
+				$cont2 = $cont2 + 1
+			}
+		} else {
+			if ($cont < 5) {
+				$caminho = $caminho + $Tok + "\"
+				PRINT = "MENOR < " + $caminho
+			}
+		}
+		$cont = $cont+ 1
+		PRINT = "CONT= " + $cont
+	} 
+	
+	STRING LIST Tokens2 = tokens($caminho, $nome ) 
+}
+
+
+FUNCTION separa(OUTPUT STRING nome, OUTPUT STRING caminho){
+	INT Index = 0
+	STRING LIST temp = tokens($caminho, "\")
+	STRING ARRAY caminhoBlocos[] = $temp
+	$caminho = "\\"
+	$nome = ""
+	WHILE Index < size(temp) - 1 {
+		$caminho = $caminho + $caminhoBlocos[$Index] + "\"
+		$Index = Index + 1
+	}
+	$caminho = $caminho + "electrode_summary.csv"
+	$Index = size(temp)
+	$nome = $caminhoBlocos[$Index - 1]
+}
+
+FUNCTION LimpaVetor(OUTPUT STRING ARRAY vetor[]){
+	INT Index = 0
+	WHILE Index < size(vetor) - 1 {
+		$vetor[Index] = replace($vetor[Index], "_", "")
+		PRINT = "AAA: " + $vetor[Index]
+	$Index = Index + 1
+	}
+}
+
+FUNCTION ajustaCentro(STRING nome, INT coordEletX, INT coordEletY, INT pos, OUTPUT STRING nomeComPos) {
+
+	STRING nomeUCS = ""
+	CALL bucaUltimo($nomeUCS , "workplane")
+	EDIT MODEL ALL DESELECT ALL
+	//Manda para ORIGEM
+		PRINT = "nome: " + $nomeUCS
+		ACTIVATE Workplane $nomeUCS
+		//EXPLORER SELECT Model "Model\E7" NEW
+		//PRINT = "----------------: " + $nome
+		TRANSFORM TYPE WORLD TRANSFORM MODEL $nome
+		MODELTRANS ACCEPT
+		DELETE WORKPLANE ALL
+		DEACTIVATE WORKPLANE
+		ROTATE TRANSFORM TOP
+		VIEW MODEL ; SHADE RAINBOW
+		EDIT MODEL $nome SELECT ALL
+		FORM BLOCK
+		EDIT BLOCKTYPE BOX
+		EDIT BLOCK RESET
+		EDIT BLOCK RESETLIMIT "0"
+		EDIT BLOCK RESET
+		BLOCK ACCEPT
+		
+	
+	//Verifica maior em X se estiver em Y rotaciona 90º
+		CALL bucaUltimo($nome , "model")
+	
+		EDIT MODEL $nome SELECT ALL
+		EDIT BLOCK ALL UNLOCK
+		EDIT BLOCK RESET
+		REAL x =  Block.Centre.X
+		REAL y =  Block.Centre.y
+	
+		REAL ref =  0.0
+		INT inverte = -1
+		$x = $x * $inverte
+		$y = $y * $inverte
+		IF (ABS(block.limits.xmax) + ABS(block.limits.xmin) > ABS(block.limits.ymax) + ABS(block.limits.ymin)) {
+			PRINT "MAIOR"
+		} ELSE {
+			TRANSFORM ANGLE "90"
+			TRANSFORM TYPE ROTATEZ TRANSFORM MODEL $nome
+		}
+	
+	//Move para posição X
+		STRING $move = ' TRANSFORM MOVE ' + $coordEletX
+		DoCommand $move
+		TRANSFORM TYPE MOVE TRANSFORM MOVEX PRESET TRANSFORM MODEL $nome
+			
+	//Move para posiçãoY
+		$move = ' TRANSFORM MOVE ' + $coordEletY
+		DoCommand $move
+		TRANSFORM TYPE MOVE TRANSFORM MOVEY PRESET TRANSFORM MODEL $nome
+		
+	//Move para Z ideal
+		TRANSFORM MOVE "-130"
+		TRANSFORM TYPE MOVE TRANSFORM MOVEZ PRESET TRANSFORM MODEL $nome
+		
+	//Renomeia com o numero da posição na frente
+		STRING novoNome = ' RENAME Model ' + $nome + " " + $nome + "-" + $pos
+		PRINT = "-------: " + $novoNome
+		DoCommand $novoNome
+		
+		$nomeComPos = $nome + "-" + $pos
+
+}
+
+
+FUNCTION ajustaCentroAntigo(STRING nome, INT coordElet, INT pos) {
+	STRING blocoTemp = ' EDIT MODEL ' + $nome + ' SELECT ALL '
+	
+	//EDIT MODEL "e22_2" SELECT ALL
+	DoCommand $blocoTemp
+	EDIT BLOCK RESETLIMIT "0"
+	EDIT BLOCK RESET
+
+	REAL x =  Block.Centre.X
+	REAL y =  Block.Centre.y
+	REAL z =  Block.Centre.z
+	REAL ref =  0.0
+	INT inverte = -1
+	$x = $x * $inverte
+	$y = $y * $inverte
+	//$z = $z * $inverte
+	BLANK EXCEPT
+	
+	
+	PRINT = "#############################: " + $z
+	//MOVER X
+	STRING move = ' TRANSFORM MOVE ' + $x
+	DoCommand $move
+	TRANSFORM TYPE MOVE TRANSFORM MOVEX PRESET TRANSFORM MODEL $nome
+
+	//MOVER Y
+	$move = ' TRANSFORM MOVE ' + $y
+	DoCommand $move
+	TRANSFORM TYPE MOVE TRANSFORM MOVEY PRESET TRANSFORM MODEL $nome
+	
+	//
+	
+	EDIT MODEL $nome SELECT ALL
+
+	EDIT BLOCKTYPE BOX
+	EDIT MODEL $nome SELECT ALL
+	EDIT BLOCK RESET
+	
+	PRINT = "X-MAX: " + block.limits.xmax
+	PRINT = "X-MIN: " + block.limits.xmin
+	
+	IF (ABS(block.limits.xmax) + ABS(block.limits.xmin) > ABS(block.limits.ymax) + ABS(block.limits.ymin)) {
+		PRINT "MAIOR"
+	} ELSE {
+		TRANSFORM ANGLE "90"
+		TRANSFORM TYPE ROTATEZ TRANSFORM MODEL $nome
+	}
+	
+	
+	//seleciona cor verde
+	EDIT SELECTION MODEL CLEAR EDIT SELECTION MODEL APPLY
+	EDIT SELECTION MODEL FILTER "0,255,0"
+	BLANK EXCEPT
+	EDIT MODEL ALL DESELECT ALL
+	EDIT MODEL $nome SELECT SURFACE
+	EDIT BLOCK RESET
+	BLANK UNDO
+	EDIT MODEL $nome SELECT SURFACE
+	//MOVER Z 1°
+	$z = block.limits.zmin
+	$z = $z * $inverte
+	$move = ' TRANSFORM MOVE ' + $z
+	DoCommand $move
+	TRANSFORM TYPE MOVE TRANSFORM MOVEZ PRESET TRANSFORM MODEL $nome
+	
+	
+	//seleciona cor violeta
+	EDIT SELECTION MODEL CLEAR EDIT SELECTION MODEL APPLY
+	EDIT SELECTION MODEL FILTER "138,43,226"
+	BLANK EXCEPT
+	EDIT MODEL ALL DESELECT ALL
+	EDIT MODEL $nome SELECT SURFACE
+	EDIT BLOCK RESET
+	BLANK UNDO
+	EDIT MODEL $nome SELECT SURFACE
+	 //
+	 $ref = block.limits.zmin
+	 //seleciona cor verde
+	EDIT SELECTION MODEL CLEAR EDIT SELECTION MODEL APPLY
+	EDIT SELECTION MODEL FILTER "0,255,0"
+	BLANK EXCEPT
+	EDIT MODEL ALL DESELECT ALL
+	EDIT MODEL $nome SELECT SURFACE
+	EDIT BLOCK RESET
+	BLANK UNDO
+	EDIT MODEL $nome SELECT SURFACE
+	 
+	$z = block.limits.zmin
+	
+	IF ($z > $ref)  {
+		PRINT "GIRAR 180° em Y"
+		TRANSFORM ANGLE "180"
+		TRANSFORM TYPE ROTATEY TRANSFORM MODEL $nome
+		$z = 16
+		PRINT = "@@@@: " + $z
+		PRINT = "@@@@: " + block.limits.zmin
+		//MOVER Z 2°
+		$move = ' TRANSFORM MOVE ' + $z
+		DoCommand $move
+		TRANSFORM TYPE MOVE TRANSFORM MOVEZ PRESET TRANSFORM MODEL $nome
+	} ELSE {
+			PRINT = "NÃO GIRAR"
+	}
+	
+	
+	//
+	
+	//MOVER Z 3°
+	$z = -150
+	$move = ' TRANSFORM MOVE ' + $z
+	DoCommand $move
+	TRANSFORM TYPE MOVE TRANSFORM MOVEZ PRESET TRANSFORM MODEL $nome
+	
+	
+	//MOVER PARA POSIÇÃO
+	$move = ' TRANSFORM MOVE ' + $coordElet
+	DoCommand $move
+	TRANSFORM TYPE MOVE TRANSFORM MOVEX PRESET TRANSFORM MODEL $nome
+	BLANK UNDO
+	EDIT MODEL ALL DESELECT ALL
+	//Deleta WORKPLANE
+	DELETE WORKPLANE ALL
+	//STRING novoNome = ' RENAME Model ' + ' " ' + $nome + ' " ' + ' " ' + $nome + "-" + $pos + ' " '
+	STRING novoNome = ' RENAME Model ' + $nome + " " + $nome + "-" + $pos
+	PRINT = "-------: " + $novoNome
+	DoCommand $novoNome
+}
+
+FUNCTION bucaUltimo(OUTPUT STRING nome, STRING tipoDeLista) {
+	INT cont = 0
+	
+	FOREACH padrao IN folder($tipoDeLista) { 
+		
+		$cont = cont + 1
+	}
+	INT cont2 = 1
+	FOREACH padrao IN folder($tipoDeLista) { 
+		IF $cont2 == $cont {
+			$nome = padrao.name
+		}	
+		$cont2 = $cont2 + 1
+	}
+}
+
+FUNCTION insereSobreGAP(STRING gap, STRING nomeElet) {
+	FORM THICKNESS EDIT THICKNESS TAB DEFAULT
+	THICKNESS ACCEPT
+
+	EDIT SELECTION MODEL FILTER "0,255,0"
+	EDIT SELECTION MODEL FILTER "138,43,226"
+	BLANK SELECTED
+	EDIT MODEL $nomeElet SELECT ALL
+	STRING sobreMetal = ' EDIT THICKNESS RADIAL_OFFSET ' + $gap
+	DoCommand $sobreMetal
+	//FORM THICKNESS EDIT THICKNESS TAB DEFAULT
+	EDIT THICKNESS DEFAULTLIST UPDATE 0 NEW
+	EDIT THICKNESS ACQUIRE
+	THICKNESS APPLY
+	THICKNESS ACCEPT
+	EDIT MODEL ALL DESELECT ALL
+	BLANK UNDO
+}
+
+FUNCTION caminoEletsPalet(OUTPUT STRING caminho){
+	INT Index = 0
+	STRING LIST temp = tokens($caminho, "\")
+	STRING ARRAY caminhoBlocos[] = $temp
+	$caminho = "\\"
+	WHILE Index < size(temp) - 1 {
+		$caminho = $caminho + $caminhoBlocos[$Index] + "\"
+		$Index = Index + 1
+	}
+	$caminho = $caminho + "palet.txt"
+	$Index = size(temp)
+}
+
+FUNCTION ler_antigo(OUTPUT STRING LIST info, STRING endElet) {
+	STRING arquivo = ""
+	STRING LIST conteudo = {} 
+	PRINT = $endElet
+	FILE OPEN $endElet FOR READ AS $arquivo
+	FILE READ $conteudo FROM $arquivo
+	STRING a = ""
+	FOREACH line IN $conteudo {
+		$a = add_last(info, $line)
+	}	
+	FILE CLOSE $arquivo
+}
+
+FUNCTION insere_antigo(STRING LIST atual, STRING raiz){
+		
+	FILE OPEN $raiz FOR WRITE AS "out"
+	FILE WRITE $atual TO "out"
+	FILE CLOSE "out"
+
+}
+
+
+FUNCTION ler(OUTPUT STRING LIST info, STRING endElet) {
+	STRING arquivo = ""
+	STRING LIST conteudo = {}
+	STRING linha = ''
+	PRINT = $endElet
+	
+	IF FILE_EXISTS($endElet) != true {	
+		FILE OPEN $endElet FOR WRITE AS "out"
+		FILE WRITE $linha TO "out"
+		PRINT = ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>: " + $endElet
+		FILE CLOSE "out"
+	}  
+	FILE OPEN $endElet FOR READ AS $arquivo
+	FILE READ $conteudo FROM $arquivo
+	STRING a = ""
+	FOREACH line IN $conteudo {
+		$a = add_last(info, $line)
+	}
+	FILE CLOSE $arquivo
+	
+}
+
+FUNCTION insere(STRING LIST atual, STRING raiz){
+		
+	FILE OPEN $raiz FOR WRITE AS "out"
+	FILE WRITE $atual TO "out"
+	FILE CLOSE "out"
+}
+	
+
+FUNCTION inserePosEndFoto(OUTPUT STRING ARRAY InfoElet[], INT pos, STRING EndFoto){
+	$InfoElet[0] = $pos
+	$InfoElet[3] = $EndFoto
+}
+FUNCTION geraString(OUTPUT STRING elet, STRING ARRAY InfoElet[]){
+	INT Index = 0
+	STRING LIST temp = {}
+	
+	$elet = $elet + $InfoElet[Index]
+	WHILE $Index < size(InfoElet)-1 {
+		$Index = Index + 1
+		$elet = $elet + ";"
+		$elet = $elet + $InfoElet[Index]
+	}
+	PRINT = $elet
+	//CALL pausa("verifica elet")
+}
+
+FUNCTION tiraFoto(OUTPUT String nomeEletrodo, OUTPUT STRING caminho) {
+	UNDRAW TOOL ALL
+	EDIT MODEL $nomeEletrodo SELECT ALL
+	BLANK EXCEPT
+	EDIT BLOCKTYPE CYLINDER
+	EDIT BLOCK RESET
+	EDIT BLOCK DIAMETER "30"
+	DRAW BLOCK
+	ROTATE TRANSFORM TOP
+	UNDRAW BLOCK
+	STRING nomeNC = ""
+	CREATE NCPROGRAM ; EDIT NCPROGRAM ; QUIT FORM NCTOOLPATH
+	CALL bucaUltimo($nomeNC, "NCPROGRAM")
+	RENAME NCPROGRAM $nomeNC "kksrtoeproiuujkmmcnvh"
+	NCTOOLPATH CANCEL FORM ACCEPT NCTOOLPATHLIST FORM ACCEPT NCTOOLLIST
+	MODE SNAPSHOT NCPROGRAM "kksrtoeproiuujkmmcnvh"
+	STRING filename = $caminho + "\" + $nomeEletrodo + ".png"
+	KEEP BITMAP $filename
+	Yes
+	MODE SNAPSHOT FINISH
+	DELETE NCProgram "kksrtoeproiuujkmmcnvh"
+	PRINT = "Caminho onde foi salvo o arquivo: " + $filename
+	$caminho = $filename
+	$caminho = replace($caminho, "/", "\")	
+	
+	BLANK UNDO
+	ROTATE TRANSFORM TOP
+	EDIT MODEL ALL DESELECT ALL
+}
+
+FUNCTION main(INT coordEletX, INT pos, INT coordEletY){
+	//
+	STRING endElet = ""	
+	STRING nomeElet = ""
+	STRING nomeComPos = ""
+	STRING os = ""
+	//INT coordElet = -375	
+	//
+
+	//Informações buscadas 
+		STRING LIST infoBuscados = {}
+	//Informações sobre o Item a ser erudido pelo eletrodo
+	
+	//Lista com informações sobre o Eletrodo
+		STRING LIST iniArray = {}
+		STRING ARRAY buscaInfoElet[10]={"0","0","0","0","0","0","0","0","0","0"}
+
+		//Vetor com todas as informações
+	
+		
+	
+	//INICIO!!!	
+	
+		//Explore de importação de eletrodo recuperando o endereço
+		CALL importarModelo($endElet)
+		
+		CALL separa($nomeElet , $endElet)
+		CALL Info($infoBuscados, $endElet)
+		STRING ARRAY Info[] = $infoBuscados
+		CALL buscaElet($Info,$nomeElet,$buscaInfoElet,$os)
+	
+
+	//CALL pausa("testa apagar3")
+		
+	//CALL LimpaVetor($InfoElet)
+	
+	//VETOR PURO JÁ TRATADO E COM TODAS AS INFORMAÇÕES DO ELETRODO IMPORTADO   "buscaInfoElet"
+	
+	//INICIAR MANIPULAÇÃO DO ELETRODO
+	CALL ajustaCentro($buscaInfoElet[2], $coordEletX, $coordEletY, $pos, $nomeComPos)
+	
+	//IMPLEMENTAR AQUI 
+	STRING dir = project_pathname(0) + "/SetupSheets_files/palet"
+	STRING dirImagem = project_pathname(0) + "/SetupSheets_files/palet/imagem"
+	STRING raiz = project_pathname(0) + "/SetupSheets_files/palet/palet.csv"
+	MKDIR $dir
+	MKDIR $dirImagem
+	STRING raiz2 = project_pathname(0) + "/SetupSheets_files/palet/a.txt"
+	$raiz = replace($raiz, "/", "\")
+	$raiz2 = replace($raiz2, "/", "\")
+	
+	CALL tiraFoto($nomeComPos, $dirImagem)
+	STRING ARRAY eletIni[1] = {""}
+	STRING LIST atual = $eletIni
+	STRING LIST atualSemEspaco = {}
+	
+	STRING endPalet = $endElet
+	STRING elet = ""
+	STRING a = ""
+	//CRIA ARQUIVO PARA PALET
+	CALL caminoEletsPalet($endPalet)
+	CALL inserePosEndFoto($buscaInfoElet, $pos, $dirImagem)
+	CALL ler($atual, $raiz)
+	CALL geraString($elet, $buscaInfoElet)
+	$a = add_last($atual, $elet)
+	FOREACH e IN $atual {
+	STRING tempTudo = ""
+		PRINT = "TAMANHO: " + length($e)
+		IF length($e) == 0 {
+			PRINT = "EM BRANCO: " + length($e)
+			BOOL success = remove(atual,e)
+			PRINT = "RMOVEU: " + $success
+		}
+	}
+
+	//CALL pausa(" ")
+	//STRING e = remove_last($atualSemEspaco)
+	
+	//CALL pausa("testa apagar1")
+
+	CALL insere($atual, $raiz)
+	
+	//CALL pausa("testa apagar3")
+	
+	//STRING ARRAY Opts2[] = { "1º" , "2º" , "3º" , "4º" , "5º" , "6º" , "7º" , "8º" , "9º" , "10º" , "11º" , "12º" , "13º" , "14º" , "15º" , "16º" }
+	//$posicao = INPUT CHOICE $Opts2 "Qual a posicao "
+
+	
+	//Implementação para inserir Gap nos eletrodos falta terminar
+	
+	
+//	IF $C==0 {
+//		STRING nomeEletTemp = $InfoElet[0] + "-" + $pos
+//		CALL insereSobreGAP($InfoElet[1], $nomeEletTemp)
+//	} ELSEIF $C==1 {
+//		STRING nomeEletTemp = $InfoElet[0] + "-" + $pos
+//		CALL insereSobreGAP($InfoElet[2], $nomeEletTemp) 
+//	} ELSEIF $C==2 {
+//		STRING nomeEletTemp = $InfoElet[0] + "-" + $pos
+//		CALL insereSobreGAP($InfoElet[3], $nomeEletTemp)
+//	}
+}

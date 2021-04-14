@@ -1,0 +1,96 @@
+FUNCTION pausa (String $msg){
+	MACRO PAUSE $msg 
+}
+
+FUNCTION ler(OUTPUT STRING LIST info, STRING endElet) {
+	STRING arquivo = ""
+	STRING LIST conteudo = {}
+	STRING linha = ''
+	PRINT = $endElet
+	
+	IF FILE_EXISTS($endElet) != true {	
+		FILE OPEN $endElet FOR WRITE AS "out"
+		FILE WRITE $linha TO "out"
+		PRINT = ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>: " + $endElet
+		FILE CLOSE "out"
+	}  
+	FILE OPEN $endElet FOR READ AS $arquivo
+	FILE READ $conteudo FROM $arquivo
+	STRING a = ""
+	FOREACH line IN $conteudo {
+		$a = add_last(info, $line)
+	}
+	FILE CLOSE $arquivo
+	
+}
+
+FUNCTION insere(STRING LIST atual, STRING raiz){
+		
+	FILE OPEN $raiz FOR WRITE AS "out"
+	FILE WRITE $atual TO "out"
+	FILE CLOSE "out"
+}
+	
+
+FUNCTION insereOuNao(OUTPUT BOOL insere) {
+	STRING LIST modelosBusca = {}	
+	FOREACH modelo IN folder('model') {
+		IF $modelo.name != "EROWA" {
+			$modelosBusca = tokens($modelo.name, "-")
+			STRING ARRAY dividido[] = $modelosBusca
+			PRINT = $dividido[1]
+			IF $dividido[1] == "6" {
+				STRING yesnoprompt = "Esta posicao do Palet ja esta sendo usada! limpar para inserir outro eletrodo?"
+				BOOL carryon = 0
+				$carryon = query $yesnoprompt
+				PRINT = $carryon
+				IF $carryon == 1 {
+					DELETE Model $modelo.name
+					$insere = 1
+				} ELSE {
+					$insere = 0
+				}
+			} 
+		}
+		PRINT = $insere
+	}
+}
+
+FUNCTION verificaPalet() {
+	STRING raiz = project_pathname(0) + "/SetupSheets_files/palet/palet.csv"
+	IF file_exists($raiz) {
+		STRING LIST atual = {}
+		STRING LIST atualizada = {}
+		CALL ler($atual, $raiz)
+
+		FOREACH e IN $atual {
+			STRING LIST temp = {}
+			PRINT = $e
+			$temp = tokens($e,';')
+			STRING ARRAY temp2[] = $temp
+			IF $temp2[0] != "6" {
+				STRING $a = add_last($atualizada, $e)
+			}
+		}
+		CALL insere($atualizada, $raiz)
+		DELETE LEVEL ALL
+	}
+}
+FUNCTION inserElet(OUTPUT BOOL insere) {
+	macro "C:\dcam\config\Macros\Palets\EROWA\BuscaDadosNovo.mac" 100, 6, -100
+}
+
+FUNCTION main() {
+	STRING raiz = project_pathname(0)
+	PRINT = "EXISTE: " + $raiz
+	IF $raiz != "" {
+		BOOL insere = 1
+		CALL insereOuNao($insere)
+		IF ($insere) {
+			CALL verificaPalet()
+			CALL inserElet($insere)
+		} 
+	} ELSE {
+		PROJECT SAVE
+	}
+}
